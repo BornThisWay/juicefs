@@ -410,7 +410,7 @@ func mountFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:  "log",
 			Value: path.Join(getDefaultLogDir(), "juicefs.log"),
-			Usage: "path of log file when running in background",
+			Usage: "path of log file",
 		},
 		&cli.BoolFlag{
 			Name:  "force",
@@ -1046,6 +1046,11 @@ func parseUIDGID(input string, defaultUid uint32, defaultGid uint32) (uint32, ui
 }
 
 func mountMain(v *vfs.VFS, c *cli.Context) {
+	if logFile := c.String("log"); logFile != "" {
+		_ = os.MkdirAll(path.Dir(logFile), 0755)
+		utils.SetOutFile(logFile)
+		logger.Infof("Logging to %s", logFile)
+	}
 	if os.Getuid() == 0 {
 		disableUpdatedb()
 	}

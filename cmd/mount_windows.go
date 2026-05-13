@@ -39,7 +39,7 @@ func mountFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:  "log",
 			Value: filepath.Join(getDefaultLogDir(), "juicefs.log"),
-			Usage: "path of log file when running in background",
+			Usage: "path of log file",
 		},
 		&cli.StringFlag{
 			Name:    "fuse-access-log",
@@ -161,6 +161,11 @@ func getDaemonStage() int {
 }
 
 func mountMain(v *vfs.VFS, c *cli.Context) {
+	if logFile := c.String("log"); logFile != "" {
+		_ = os.MkdirAll(filepath.Dir(logFile), 0755)
+		utils.SetOutFile(logFile)
+		logger.Infof("Logging to %s", logFile)
+	}
 	v.Conf.AccessLog = c.String("access-log")
 	v.Conf.AttrTimeout = utils.Duration(c.String("attr-cache"))
 	v.Conf.EntryTimeout = utils.Duration(c.String("entry-cache"))
